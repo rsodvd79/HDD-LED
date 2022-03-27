@@ -23,6 +23,7 @@ Partial Class frmMain
     <System.Diagnostics.DebuggerStepThrough()>
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
+        Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmMain))
         Me.TimerLeggiValori = New System.Windows.Forms.Timer(Me.components)
         Me.ListBoxLog = New System.Windows.Forms.ListBox()
         Me.TimerScriviValori = New System.Windows.Forms.Timer(Me.components)
@@ -35,6 +36,7 @@ Partial Class frmMain
         Me.Label2 = New System.Windows.Forms.Label()
         Me.Label3 = New System.Windows.Forms.Label()
         Me.TrackBarScrivi = New System.Windows.Forms.TrackBar()
+        Me.ToolTipMain = New System.Windows.Forms.ToolTip(Me.components)
         CType(Me.TrackBarLuminosita, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.TableLayoutPanelMain.SuspendLayout()
         Me.TableLayoutPanelCommand.SuspendLayout()
@@ -189,6 +191,7 @@ Partial Class frmMain
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.ClientSize = New System.Drawing.Size(993, 450)
         Me.Controls.Add(Me.TableLayoutPanelMain)
+        Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "frmMain"
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "HDD LED"
@@ -215,4 +218,5 @@ Partial Class frmMain
     Friend WithEvents Label2 As Label
     Friend WithEvents Label3 As Label
     Friend WithEvents TrackBarScrivi As TrackBar
+    Friend WithEvents ToolTipMain As ToolTip
 End Class

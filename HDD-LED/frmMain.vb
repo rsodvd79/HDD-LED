@@ -79,8 +79,6 @@ Public Class frmMain
 
                 If MyUsbDevice.Open() Then
                     addListi("Device Open.")
-                    TimerScriviValori.Interval = TrackBarScrivi.Value
-                    TimerScriviValori.Enabled = True
 
                 Else
                     addListi("Device Not Open.")
@@ -94,6 +92,9 @@ Public Class frmMain
             addListi(ex.Message)
 
         End Try
+
+        TimerScriviValori.Interval = TrackBarScrivi.Value
+        TimerScriviValori.Enabled = True
 
         TimerLeggiValori.Interval = TrackBarLeggi.Value
         TimerLeggiValori.Enabled = True
@@ -130,29 +131,29 @@ Public Class frmMain
     End Sub
 
     Private Sub sendUsbDevice(intI As Byte, intR As Byte, intG As Byte, intB As Byte)
-        If MyUsbDevice IsNot Nothing Then
-
-            Dim numBytesTransferred As Integer = 0
-
-            MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-                UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-                &H9, &H300, intI, 0), Nothing, 0, numBytesTransferred)
-
-            MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-                UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-                &H9, &H300, intR, 0), Nothing, 0, numBytesTransferred)
-
-            MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-                UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-                &H9, &H300, intG, 0), Nothing, 0, numBytesTransferred)
-
-            MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-                UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-                &H9, &H300, intB, 0), Nothing, 0, numBytesTransferred)
-
-            Threading.Thread.Sleep(10)
-
+        If MyUsbDevice Is Nothing Then
+            Exit Sub
         End If
+
+        Dim numBytesTransferred As Integer = 0
+
+        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+            &H9, &H300, intI, 0), Nothing, 0, numBytesTransferred)
+
+        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+            &H9, &H300, intR, 0), Nothing, 0, numBytesTransferred)
+
+        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+            &H9, &H300, intG, 0), Nothing, 0, numBytesTransferred)
+
+        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+            &H9, &H300, intB, 0), Nothing, 0, numBytesTransferred)
+
+        Threading.Thread.Sleep(10)
 
     End Sub
 
@@ -163,6 +164,7 @@ Public Class frmMain
     End Function
 
     Private Sub TimerScriviValori_Tick(sender As Object, e As EventArgs) Handles TimerScriviValori.Tick
+
         Dim myBitmap As Bitmap = New Bitmap(64, 64) ' Me.Icon.ToBitmap
         Dim grpX As Graphics = Graphics.FromImage(myBitmap)
         grpX.Clear(Color.Black)
@@ -195,12 +197,18 @@ Public Class frmMain
 
     Private Sub TrackBarLeggi_Scroll(sender As Object, e As EventArgs) Handles TrackBarLeggi.Scroll
         TimerLeggiValori.Interval = TrackBarLeggi.Value
+        ToolTipMain.SetToolTip(TrackBarLeggi, TrackBarLeggi.Value.ToString)
 
     End Sub
 
     Private Sub TrackBarScrivi_Scroll(sender As Object, e As EventArgs) Handles TrackBarScrivi.Scroll
         TimerScriviValori.Interval = TrackBarScrivi.Value
+        ToolTipMain.SetToolTip(TrackBarScrivi, TrackBarScrivi.Value.ToString)
 
+    End Sub
+
+    Private Sub TrackBarLuminosita_ValueChanged(sender As Object, e As EventArgs) Handles TrackBarLuminosita.ValueChanged
+        ToolTipMain.SetToolTip(TrackBarLuminosita, TrackBarLuminosita.Value.ToString)
     End Sub
 
 End Class

@@ -131,8 +131,6 @@ Public Class frmMain
     End Sub
 
     Private Sub sendUsbDevice(intI As Byte, intR As Byte, intG As Byte, intB As Byte)
-        'Threading.Tasks.Task.Factory.StartNew(
-        '    Sub()
         If MyUsbDevice Is Nothing Then
             Exit Sub
         End If
@@ -154,10 +152,6 @@ Public Class frmMain
         MyUsbDevice.ControlTransfer(New UsbSetupPacket(
             UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
             &H9, &H300, intB, 0), Nothing, 0, numBytesTransferred)
-
-        '    End Sub
-        ')
-
 
     End Sub
 

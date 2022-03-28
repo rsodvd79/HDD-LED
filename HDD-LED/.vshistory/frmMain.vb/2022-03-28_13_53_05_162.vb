@@ -131,32 +131,32 @@ Public Class frmMain
     End Sub
 
     Private Sub sendUsbDevice(intI As Byte, intR As Byte, intG As Byte, intB As Byte)
-        'Threading.Tasks.Task.Factory.StartNew(
-        '    Sub()
         If MyUsbDevice Is Nothing Then
             Exit Sub
         End If
 
-        Dim numBytesTransferred As Integer = 0
+        Threading.Tasks.Task.Factory.StartNew(
+            Sub()
+                Dim numBytesTransferred As Integer = 0
 
-        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-            &H9, &H300, intI, 0), Nothing, 0, numBytesTransferred)
+                MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+                    UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+                    &H9, &H300, intI, 0), Nothing, 0, numBytesTransferred)
 
-        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-            &H9, &H300, intR, 0), Nothing, 0, numBytesTransferred)
+                MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+                    UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+                    &H9, &H300, intR, 0), Nothing, 0, numBytesTransferred)
 
-        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-            &H9, &H300, intG, 0), Nothing, 0, numBytesTransferred)
+                MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+                    UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+                    &H9, &H300, intG, 0), Nothing, 0, numBytesTransferred)
 
-        MyUsbDevice.ControlTransfer(New UsbSetupPacket(
-            UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
-            &H9, &H300, intB, 0), Nothing, 0, numBytesTransferred)
+                MyUsbDevice.ControlTransfer(New UsbSetupPacket(
+                    UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
+                    &H9, &H300, intB, 0), Nothing, 0, numBytesTransferred)
 
-        '    End Sub
-        ')
+            End Sub
+        )
 
 
     End Sub

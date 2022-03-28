@@ -153,6 +153,8 @@ Public Class frmMain
             UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
             &H9, &H300, intB, 0), Nothing, 0, numBytesTransferred)
 
+        Threading.Thread.Sleep(10)
+
     End Sub
 
     'Declare Function DestroyIcon Lib "user32" (ByVal hIcon As IntPtr) As Integer
@@ -189,7 +191,7 @@ Public Class frmMain
 
         Me.Icon = Icon.FromHandle(x)
 
-        'DestroyIcon(x)
+        DestroyIcon(x)
 
     End Sub
 
@@ -207,13 +209,6 @@ Public Class frmMain
 
     Private Sub TrackBarLuminosita_ValueChanged(sender As Object, e As EventArgs) Handles TrackBarLuminosita.ValueChanged
         ToolTipMain.SetToolTip(TrackBarLuminosita, TrackBarLuminosita.Value.ToString)
-    End Sub
-
-    Private Sub Me_Shown(sender As Object, e As EventArgs) Handles Me.Shown
-        ToolTipMain.SetToolTip(TrackBarLeggi, TrackBarLeggi.Value.ToString)
-        ToolTipMain.SetToolTip(TrackBarScrivi, TrackBarScrivi.Value.ToString)
-        ToolTipMain.SetToolTip(TrackBarLuminosita, TrackBarLuminosita.Value.ToString)
-
     End Sub
 
 End Class

@@ -85,6 +85,7 @@
     <Import Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClassConfig.vb" />
     <Compile Include="clsDriver.vb" />
     <Compile Include="frmMain.vb">
       <SubType>Form</SubType>

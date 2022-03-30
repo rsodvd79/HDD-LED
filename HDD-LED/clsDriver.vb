@@ -1,20 +1,20 @@
 ﻿Imports System.ComponentModel
 
 Public Class clsDriver
-    Dim PerformanceCounterLetturaSec As PerformanceCounter
-    Dim PerformanceCounterScritturaSec As PerformanceCounter
+    Private PerformanceCounterLetturaSec As PerformanceCounter
+    Private PerformanceCounterScritturaSec As PerformanceCounter
 
-    Public Leggi As Boolean = False
-    Public Scrivi As Boolean = False
+    Private Leggi As Boolean = False
+    Private Scrivi As Boolean = False
 
-    Public Lettura As Single = 0
-    Public Scrittura As Single = 0
+    Private Lettura As Single = 0
+    Private Scrittura As Single = 0
 
-    Public IName As String = String.Empty
+    Public Property IName As String = String.Empty
 
-    Public Control As urcLed = Nothing
+    Public Property Control As urcLed = Nothing
 
-    Public Tipo As enmTipo = enmTipo.none
+    Public Property Tipo As enmTipo = enmTipo.none
 
     Public Enum enmTipo
         none
@@ -73,7 +73,7 @@ Public Class clsDriver
 
     End Sub
 
-    Public Sub update()
+    Public Sub Update()
         Try
             Lettura = CSng(Math.Round(Math.Max(Lettura, PerformanceCounterLetturaSec.NextValue), 1))
             Scrittura = CSng(Math.Round(Math.Max(Scrittura, PerformanceCounterScritturaSec.NextValue), 1))
@@ -86,40 +86,34 @@ Public Class clsDriver
         Leggi = Leggi OrElse Lettura > 0
         Scrivi = Scrivi OrElse Scrittura > 0
 
+        Show()
+
     End Sub
 
-    Public Sub show(Luminosita As Integer)
-
-        Control.SuspendLayout()
-        Control.LabelCaption.SuspendLayout()
-        Control.LabelLeggi.SuspendLayout()
-        Control.LabelScrivi.SuspendLayout()
-
-        Control.BackColor = Color.FromArgb(255, If(Scrivi, Luminosita, 0), If(Leggi, Luminosita, 0), If(Leggi AndAlso Scrivi, Luminosita, 0))
-        Control.LabelCaption.Text = IName
-
-        Dim strLeggi As String = String.Empty
-        Dim strScrivi As String = String.Empty
-
+    Public Function ColoreConLuminosita(Luminosita As Integer) As Color
         Select Case Tipo
-            Case enmTipo.Drive
-                strLeggi = "L : " & Lettura.ToString
-                strScrivi = "S : " & Scrittura.ToString
-
-            Case enmTipo.Lan
-                strLeggi = "D : " & Lettura.ToString
-                strScrivi = "U : " & Scrittura.ToString
+            Case enmTipo.Drive, enmTipo.Lan
+                Return Color.FromArgb(255, If(Scrivi AndAlso Not Leggi, Luminosita, 0), If(Not Scrivi AndAlso Leggi, Luminosita, 0), If(Scrivi AndAlso Leggi, Luminosita, 0))
 
             Case enmTipo.CPU
-                strLeggi = Lettura.ToString & " %"
-
                 Dim l As Integer = CInt((Luminosita * Lettura) / 100)
 
-                Control.BackColor = Color.FromArgb(255, l, l, l)
-                Control.LabelCaption.Text = "CPU"
+                Return Color.FromArgb(255, l, l, l)
 
         End Select
 
+    End Function
+
+    Public Function Colore() As Color
+        Return ColoreConLuminosita(255)
+
+    End Function
+
+    Public Sub Show()
+
+        Control.SuspendLayout()
+
+        Control.BackColor = Colore()
         Control.LabelCaption.ForeColor = ColorInverter(Control.BackColor)
         Control.LabelCaption.BackColor = Control.BackColor
 
@@ -129,17 +123,34 @@ Public Class clsDriver
         Control.LabelScrivi.ForeColor = ColorInverter(Control.BackColor)
         Control.LabelScrivi.BackColor = Control.BackColor
 
+        Control.LabelCaption.Text = IName
+
+        Dim strLeggi As String = String.Empty
+        Dim strScrivi As String = String.Empty
+
+        Select Case Tipo
+            Case enmTipo.Drive
+                strLeggi = $"L : {Lettura:#0.0}"
+                strScrivi = $"S : {Scrittura:#0.0}"
+
+            Case enmTipo.Lan
+                strLeggi = $"D : {Lettura:#0.0}"
+                strScrivi = $"U : {Scrittura:#0.0}"
+
+            Case enmTipo.CPU
+                strLeggi = $"{Lettura} %"
+                Control.LabelCaption.Text = "CPU"
+
+        End Select
+
         Control.LabelLeggi.Text = strLeggi
         Control.LabelScrivi.Text = strScrivi
 
-        Control.LabelScrivi.ResumeLayout()
-        Control.LabelLeggi.ResumeLayout()
-        Control.LabelCaption.ResumeLayout()
         Control.ResumeLayout()
 
     End Sub
 
-    Public Sub reset()
+    Public Sub Reset()
         Leggi = False
         Scrivi = False
         Lettura = 0

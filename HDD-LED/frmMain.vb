@@ -4,7 +4,7 @@ Imports System.ComponentModel
 
 Public Class frmMain
     Dim MyUsbDevice As UsbDevice = Nothing
-
+    Dim Configurazione As ClassConfig
     Dim lstDrivers As List(Of clsDriver)
 
     Private Sub TimerLeggiValori_Tick(sender As Object, e As EventArgs) Handles TimerLeggiValori.Tick
@@ -26,6 +26,11 @@ Public Class frmMain
     End Sub
 
     Private Sub Me_Load(sender As Object, e As EventArgs) Handles Me.Load
+        Configurazione = ClassConfig.Carica
+
+        TrackBarLuminosita.Value = Configurazione.Luminosita
+        TrackBarLeggi.Value = Configurazione.Leggi
+        TrackBarScrivi.Value = Configurazione.Scrivi
 
         TrackBarLuminosita.Width = 0
 
@@ -110,6 +115,16 @@ Public Class frmMain
     End Sub
 
     Private Sub Me_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
+        If Configurazione Is Nothing Then
+            Configurazione = ClassConfig.Carica
+
+        End If
+
+        Configurazione.Luminosita = TrackBarLuminosita.Value
+        Configurazione.Leggi = TrackBarLeggi.Value
+        Configurazione.Scrivi = TrackBarScrivi.Value
+        Configurazione.Salva()
+
         TimerLeggiValori.Enabled = False
         TimerScriviValori.Enabled = False
 
@@ -174,11 +189,11 @@ Public Class frmMain
         grpX.Clear(Color.Black)
 
         For intX As Integer = 0 To lstDrivers.Count - 1
-            lstDrivers(intX).show(TrackBarLuminosita.Value)
-            Dim clrX As Color = lstDrivers(intX).Control.BackColor
+            'lstDrivers(intX).show()
+            Dim clrX As Color = lstDrivers(intX).ColoreConLuminosita(TrackBarLuminosita.Value)
             sendUsbDevice(CByte(intX + 1), clrX.R, clrX.G, clrX.B)
 
-            grpX.FillRectangle(New SolidBrush(clrX), CSng(intX * (myBitmap.Width / lstDrivers.Count)), 0, CSng(myBitmap.Width / lstDrivers.Count), myBitmap.Height)
+            grpX.FillRectangle(New SolidBrush(lstDrivers(intX).Colore), CSng(intX * (myBitmap.Width / lstDrivers.Count)), 0, CSng(myBitmap.Width / lstDrivers.Count), myBitmap.Height)
             grpX.DrawLine(New Pen(Color.White, 1), CSng(intX * (myBitmap.Width / lstDrivers.Count)), 0, CSng(intX * (myBitmap.Width / lstDrivers.Count)), myBitmap.Height)
 
             lstDrivers(intX).reset()

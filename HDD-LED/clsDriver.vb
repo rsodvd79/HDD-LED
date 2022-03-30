@@ -163,7 +163,7 @@ Public Class clsDriver
 
             Case enmTipo.Audio
                 strLeggi = $"{Lettura:#0.0}"
-                Control.LabelCaption.Text = DeviceAudio.ToString
+                Control.LabelCaption.Text = DeviceAudio.FriendlyName
 
         End Select
 

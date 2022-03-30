@@ -68,6 +68,13 @@ Public Class frmMain
 
         Next
 
+        Dim MMDeviceEnumeratorX As New NAudio.CoreAudioApi.MMDeviceEnumerator
+        For Each MMDeviceX As NAudio.CoreAudioApi.MMDevice In MMDeviceEnumeratorX.EnumerateAudioEndPoints(NAudio.CoreAudioApi.DataFlow.All, NAudio.CoreAudioApi.DeviceState.Active)
+            If MMDeviceX.DataFlow = NAudio.CoreAudioApi.DataFlow.Render Then
+                lstDrivers.Add(New clsDriver(MMDeviceX) With {.Control = New urcLed() With {.BorderStyle = BorderStyle.FixedSingle, .Width = drcW, .Height = drcH}})
+            End If
+        Next
+
         For Each cldX As clsDriver In lstDrivers
             FlowLayoutPanelLeds.Controls.Add(cldX.Control)
 

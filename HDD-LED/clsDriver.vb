@@ -9,6 +9,7 @@ Public Class clsDriver
 
     Private Lettura As Single = 0
     Private Scrittura As Single = 0
+    Private DeviceAudio As NAudio.CoreAudioApi.MMDevice = Nothing
 
     Public Property IName As String = String.Empty
 
@@ -21,11 +22,22 @@ Public Class clsDriver
         Drive
         Lan
         CPU
+        Audio
     End Enum
+
+    Public Sub New(MMDeviceX As NAudio.CoreAudioApi.MMDevice)
+        Tipo = enmTipo.Audio
+        DeviceAudio = MMDeviceX
+        IName = MMDeviceX.ToString
+    End Sub
 
     Public Sub New(strIName As String, entTipo As enmTipo)
         IName = strIName
         Tipo = entTipo
+
+        If Tipo = enmTipo.Audio Then
+            Exit Sub
+        End If
 
         PerformanceCounterLetturaSec = New PerformanceCounter()
         CType(PerformanceCounterLetturaSec, ISupportInitialize).BeginInit()
@@ -71,12 +83,20 @@ Public Class clsDriver
         PerformanceCounterScritturaSec.InstanceName = IName
         CType(PerformanceCounterScritturaSec, ISupportInitialize).EndInit()
 
+
     End Sub
 
     Public Sub Update()
         Try
-            Lettura = CSng(Math.Round(Math.Max(Lettura, PerformanceCounterLetturaSec.NextValue), 1))
-            Scrittura = CSng(Math.Round(Math.Max(Scrittura, PerformanceCounterScritturaSec.NextValue), 1))
+            If Tipo = enmTipo.Audio Then
+                Lettura = CSng(Math.Round(DeviceAudio.AudioMeterInformation.MasterPeakValue * 100, 1))
+                Scrittura = Lettura
+
+            Else
+                Lettura = CSng(Math.Round(Math.Max(Lettura, PerformanceCounterLetturaSec.NextValue), 1))
+                Scrittura = CSng(Math.Round(Math.Max(Scrittura, PerformanceCounterScritturaSec.NextValue), 1))
+
+            End If
 
         Catch ex As Exception
             Throw
@@ -95,8 +115,8 @@ Public Class clsDriver
             Case enmTipo.Drive, enmTipo.Lan
                 Return Color.FromArgb(255, If(Scrivi AndAlso Not Leggi, Luminosita, 0), If(Not Scrivi AndAlso Leggi, Luminosita, 0), If(Scrivi AndAlso Leggi, Luminosita, 0))
 
-            Case enmTipo.CPU
-                Dim l As Integer = CInt((Luminosita * Lettura) / 100)
+            Case enmTipo.CPU, enmTipo.Audio
+                Dim l As Integer = Math.Min(255, Math.Max(0, CInt((Luminosita * Lettura) / 100)))
 
                 Return Color.FromArgb(255, l, l, l)
 
@@ -138,8 +158,12 @@ Public Class clsDriver
                 strScrivi = $"U : {Scrittura:#0.0}"
 
             Case enmTipo.CPU
-                strLeggi = $"{Lettura} %"
+                strLeggi = $"{Lettura:#0.0} %"
                 Control.LabelCaption.Text = "CPU"
+
+            Case enmTipo.Audio
+                strLeggi = $"{Lettura:#0.0}"
+                Control.LabelCaption.Text = DeviceAudio.ToString
 
         End Select
 

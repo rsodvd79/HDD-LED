@@ -3,13 +3,15 @@
 Public Class clsDriver
     Private PerformanceCounterLetturaSec As PerformanceCounter
     Private PerformanceCounterScritturaSec As PerformanceCounter
+    Private DeviceAudio As NAudio.CoreAudioApi.MMDevice = Nothing
 
     Private Leggi As Boolean = False
     Private Scrivi As Boolean = False
 
     Private Lettura As Single = 0
     Private Scrittura As Single = 0
-    Private DeviceAudio As NAudio.CoreAudioApi.MMDevice = Nothing
+
+    Private WithEvents TimerLeggi As Timer
 
     Public Property IName As String = String.Empty
 
@@ -25,13 +27,26 @@ Public Class clsDriver
         Audio
     End Enum
 
+    Public Sub SetInterval(interval As Integer)
+        TimerLeggi.Interval = interval
+        TimerLeggi.Enabled = True
+    End Sub
+
+    Private Sub Nuovo()
+        TimerLeggi = New Timer With {
+            .Interval = 10
+        }
+    End Sub
+
     Public Sub New(MMDeviceX As NAudio.CoreAudioApi.MMDevice)
+        Nuovo()
         Tipo = enmTipo.Audio
         DeviceAudio = MMDeviceX
         IName = MMDeviceX.ToString
     End Sub
 
     Public Sub New(strIName As String, entTipo As enmTipo)
+        Nuovo()
         IName = strIName
         Tipo = entTipo
 
@@ -83,6 +98,22 @@ Public Class clsDriver
         PerformanceCounterScritturaSec.InstanceName = IName
         CType(PerformanceCounterScritturaSec, ISupportInitialize).EndInit()
 
+    End Sub
+
+    Public Sub Inizializza()
+
+        If Tipo = enmTipo.Drive Then
+            For Each d As IO.DriveInfo In IO.DriveInfo.GetDrives()
+                If d.Name.StartsWith(IName) Then
+                    Control.LabelCaption.Text = $"{IName} ({d.VolumeLabel})"
+                    Exit Sub
+                End If
+            Next
+
+        Else
+            Control.LabelCaption.Text = IName
+
+        End If
 
     End Sub
 
@@ -108,6 +139,12 @@ Public Class clsDriver
 
         Show()
 
+        'Threading.Tasks.Task.Factory.StartNew(
+        '    Sub()
+
+        '    End Sub
+        '    )
+
     End Sub
 
     Public Function ColoreConLuminosita(Luminosita As Integer) As Color
@@ -115,8 +152,13 @@ Public Class clsDriver
             Case enmTipo.Drive, enmTipo.Lan
                 Return Color.FromArgb(255, If(Scrivi AndAlso Not Leggi, Luminosita, 0), If(Not Scrivi AndAlso Leggi, Luminosita, 0), If(Scrivi AndAlso Leggi, Luminosita, 0))
 
-            Case enmTipo.CPU, enmTipo.Audio
+            Case enmTipo.CPU
                 Dim l As Integer = Math.Min(255, Math.Max(0, CInt((Luminosita * Lettura) / 100)))
+
+                Return Color.FromArgb(255, l, l, l)
+
+            Case enmTipo.Audio
+                Dim l As Integer = Math.Min(255, Math.Max(0, CInt((Luminosita * ((60 * Lettura) / 100) / 100))))
 
                 Return Color.FromArgb(255, l, l, l)
 
@@ -129,7 +171,12 @@ Public Class clsDriver
 
     End Function
 
+    Delegate Sub Delegate_Show()
     Public Sub Show()
+        If Control.InvokeRequired Then
+            Control.BeginInvoke(New Delegate_Show(AddressOf Show))
+            Exit Sub
+        End If
 
         Control.SuspendLayout()
 
@@ -142,8 +189,6 @@ Public Class clsDriver
 
         Control.LabelScrivi.ForeColor = ColorInverter(Control.BackColor)
         Control.LabelScrivi.BackColor = Control.BackColor
-
-        Control.LabelCaption.Text = IName
 
         Dim strLeggi As String = String.Empty
         Dim strScrivi As String = String.Empty
@@ -158,11 +203,11 @@ Public Class clsDriver
                 strScrivi = $"U : {Scrittura:#0.0}"
 
             Case enmTipo.CPU
-                strLeggi = $"{Lettura:#0.0} %"
+                strLeggi = $"P : {Lettura:#0.0} %"
                 Control.LabelCaption.Text = "CPU"
 
             Case enmTipo.Audio
-                strLeggi = $"{Lettura:#0.0}"
+                strLeggi = $"V : {Lettura:#0.0}"
                 Control.LabelCaption.Text = DeviceAudio.FriendlyName
 
         End Select
@@ -197,5 +242,13 @@ Public Class clsDriver
         Return 127 + (128 - intX)
     End Function
 
+    Private Sub TimerLeggi_Tick(sender As Object, e As EventArgs) Handles TimerLeggi.Tick
+        Try
+            Update()
+        Catch ex As Exception
+            TimerLeggi.Enabled = False
+            Control.Visible = False
+        End Try
+    End Sub
 End Class
 

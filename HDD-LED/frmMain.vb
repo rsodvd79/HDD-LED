@@ -5,25 +5,7 @@ Imports System.ComponentModel
 Public Class frmMain
     Dim MyUsbDevice As UsbDevice = Nothing
     Dim Configurazione As ClassConfig
-    Dim lstDrivers As List(Of clsDriver)
-
-    Private Sub TimerLeggiValori_Tick(sender As Object, e As EventArgs) Handles TimerLeggiValori.Tick
-
-        For intX As Integer = 0 To lstDrivers.Count - 1
-            Try
-                lstDrivers(intX).update()
-
-            Catch ex As Exception
-                addListi("Removed " & lstDrivers(intX).IName & " " & ex.Message)
-                FlowLayoutPanelLeds.Controls.Remove(lstDrivers(intX).Control)
-                lstDrivers.RemoveAt(intX)
-                Exit For
-
-            End Try
-
-        Next
-
-    End Sub
+    Dim lstDrivers As List(Of urcLed)
 
     Private Sub Me_Load(sender As Object, e As EventArgs) Handles Me.Load
         Configurazione = ClassConfig.Carica
@@ -41,18 +23,18 @@ Public Class frmMain
         ListBoxLog.Height = 0
         ListBoxLog.Items.Clear()
 
-        Dim drcW As Integer = 80
-        Dim drcH As Integer = drcW
+        Dim drcW As Integer = 100
+        Dim drcH As Integer = 80
 
-        lstDrivers = New List(Of clsDriver) From {
-            New clsDriver("_Total", clsDriver.enmTipo.CPU) With {.Control = New urcLed() With {.BorderStyle = BorderStyle.FixedSingle, .Width = drcW, .Height = drcH}}
+        lstDrivers = New List(Of urcLed) From {
+            New urcLed("_Total", urcLed.enmTipo.CPU)
         }
 
         For Each drive As IO.DriveInfo In My.Computer.FileSystem.Drives
             addListi("Found Driver " & drive.Name & " " & drive.DriveType.ToString & " " & If(drive.DriveType = IO.DriveType.Fixed OrElse drive.DriveType = IO.DriveType.Removable, String.Empty, "IGNORED"))
 
             If drive.DriveType = IO.DriveType.Fixed OrElse drive.DriveType = IO.DriveType.Removable Then
-                lstDrivers.Add(New clsDriver(drive.Name.Substring(0, 2), clsDriver.enmTipo.Drive) With {.Control = New urcLed() With {.BorderStyle = BorderStyle.FixedSingle, .Width = drcW, .Height = drcH}})
+                lstDrivers.Add(New urcLed(drive.Name.Substring(0, 2), urcLed.enmTipo.Drive))
 
             End If
 
@@ -62,21 +44,30 @@ Public Class frmMain
             Dim properties As Net.NetworkInformation.IPInterfaceProperties = adapter.GetIPProperties()
             addListi("Found Network " & adapter.Description & " " & adapter.OperationalStatus.ToString)
             If adapter.OperationalStatus = Net.NetworkInformation.OperationalStatus.Up Then
-                lstDrivers.Add(New clsDriver(adapter.Description.Replace("(", "[").Replace(")", "]"), clsDriver.enmTipo.Lan) With {.Control = New urcLed() With {.BorderStyle = BorderStyle.FixedSingle, .Width = drcW, .Height = drcH}})
+                lstDrivers.Add(New urcLed(adapter.Description.Replace("(", "[").Replace(")", "]"), urcLed.enmTipo.Lan))
 
             End If
 
         Next
 
         Dim MMDeviceEnumeratorX As New NAudio.CoreAudioApi.MMDeviceEnumerator
-        For Each MMDeviceX As NAudio.CoreAudioApi.MMDevice In MMDeviceEnumeratorX.EnumerateAudioEndPoints(NAudio.CoreAudioApi.DataFlow.All, NAudio.CoreAudioApi.DeviceState.Active)
-            If MMDeviceX.DataFlow = NAudio.CoreAudioApi.DataFlow.Render Then
-                lstDrivers.Add(New clsDriver(MMDeviceX) With {.Control = New urcLed() With {.BorderStyle = BorderStyle.FixedSingle, .Width = drcW, .Height = drcH}})
-            End If
-        Next
+        'For Each MMDeviceX As NAudio.CoreAudioApi.MMDevice In MMDeviceEnumeratorX.EnumerateAudioEndPoints(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.DeviceState.Active)
+        Dim MMDeviceX As NAudio.CoreAudioApi.MMDevice = MMDeviceEnumeratorX.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Multimedia)
+        lstDrivers.Add(New urcLed(MMDeviceX))
+        'Next
 
-        For Each cldX As clsDriver In lstDrivers
-            FlowLayoutPanelLeds.Controls.Add(cldX.Control)
+        For Each cldX As urcLed In lstDrivers
+            cldX.BorderStyle = BorderStyle.FixedSingle
+            cldX.Width = drcW
+            cldX.Height = drcH
+            cldX.Inizializza()
+            cldX.SetInterval(TrackBarLeggi.Value)
+
+            AddHandler cldX.Log, Sub(_sender, _e)
+                                     addListi(_e.Messaggio)
+                                 End Sub
+
+            FlowLayoutPanelLeds.Controls.Add(cldX)
 
         Next
 
@@ -105,11 +96,8 @@ Public Class frmMain
 
         End Try
 
-        TimerScriviValori.Interval = TrackBarScrivi.Value
+        TrackBarScrivi_Scroll(TrackBarScrivi, New EventArgs())
         TimerScriviValori.Enabled = True
-
-        TimerLeggiValori.Interval = TrackBarLeggi.Value
-        TimerLeggiValori.Enabled = True
 
     End Sub
 
@@ -153,8 +141,7 @@ Public Class frmMain
     End Sub
 
     Private Sub sendUsbDevice(intI As Byte, intR As Byte, intG As Byte, intB As Byte)
-        'Threading.Tasks.Task.Factory.StartNew(
-        '    Sub()
+
         If MyUsbDevice Is Nothing Then
             Exit Sub
         End If
@@ -177,10 +164,6 @@ Public Class frmMain
             UsbCtrlFlags.RequestType_Class Or UsbCtrlFlags.Recipient_Device Or UsbCtrlFlags.Direction_Out,
             &H9, &H300, intB, 0), Nothing, 0, numBytesTransferred)
 
-        '    End Sub
-        ')
-
-
     End Sub
 
     'Declare Function DestroyIcon Lib "user32" (ByVal hIcon As IntPtr) As Integer
@@ -196,14 +179,15 @@ Public Class frmMain
         grpX.Clear(Color.Black)
 
         For intX As Integer = 0 To lstDrivers.Count - 1
-            'lstDrivers(intX).show()
+            lstDrivers(intX).Mostra()
+
             Dim clrX As Color = lstDrivers(intX).ColoreConLuminosita(TrackBarLuminosita.Value)
             sendUsbDevice(CByte(intX + 1), clrX.R, clrX.G, clrX.B)
 
             grpX.FillRectangle(New SolidBrush(lstDrivers(intX).Colore), CSng(intX * (myBitmap.Width / lstDrivers.Count)), 0, CSng(myBitmap.Width / lstDrivers.Count), myBitmap.Height)
             grpX.DrawLine(New Pen(Color.White, 1), CSng(intX * (myBitmap.Width / lstDrivers.Count)), 0, CSng(intX * (myBitmap.Width / lstDrivers.Count)), myBitmap.Height)
 
-            lstDrivers(intX).reset()
+            lstDrivers(intX).Reset()
 
         Next
 
@@ -225,10 +209,16 @@ Public Class frmMain
         TimerLeggiValori.Interval = TrackBarLeggi.Value
         ToolTipMain.SetToolTip(TrackBarLeggi, TrackBarLeggi.Value.ToString)
 
+        For Each cldX As urcLed In lstDrivers
+            cldX.SetInterval(TrackBarLeggi.Value)
+
+        Next
+
     End Sub
 
     Private Sub TrackBarScrivi_Scroll(sender As Object, e As EventArgs) Handles TrackBarScrivi.Scroll
         TimerScriviValori.Interval = TrackBarScrivi.Value
+        TrackBarLeggi.Maximum = TrackBarScrivi.Value - 1
         ToolTipMain.SetToolTip(TrackBarScrivi, TrackBarScrivi.Value.ToString)
 
     End Sub

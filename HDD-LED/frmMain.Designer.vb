@@ -145,8 +145,7 @@ Partial Class frmMain
         Me.TrackBarLeggi.Minimum = 10
         Me.TrackBarLeggi.Name = "TrackBarLeggi"
         Me.TrackBarLeggi.Size = New System.Drawing.Size(830, 45)
-        Me.TrackBarLeggi.TabIndex = 5
-        Me.TrackBarLeggi.TickFrequency = 10
+        Me.TrackBarLeggi.TabIndex = 10
         Me.TrackBarLeggi.Value = 12
         '
         'Label2
@@ -178,11 +177,10 @@ Partial Class frmMain
         Me.TrackBarScrivi.Dock = System.Windows.Forms.DockStyle.Top
         Me.TrackBarScrivi.Location = New System.Drawing.Point(154, 105)
         Me.TrackBarScrivi.Maximum = 1000
-        Me.TrackBarScrivi.Minimum = 10
+        Me.TrackBarScrivi.Minimum = 20
         Me.TrackBarScrivi.Name = "TrackBarScrivi"
         Me.TrackBarScrivi.Size = New System.Drawing.Size(830, 45)
         Me.TrackBarScrivi.TabIndex = 8
-        Me.TrackBarScrivi.TickFrequency = 10
         Me.TrackBarScrivi.Value = 125
         '
         'frmMain

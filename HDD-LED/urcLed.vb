@@ -192,6 +192,15 @@ Public Class urcLed
             Return Color.Black
         End If
 
+        'If Tipo = enmTipo.Audio Then
+        '    Dim MMDeviceEnumeratorX As New NAudio.CoreAudioApi.MMDeviceEnumerator
+        '    Dim MMDeviceX As NAudio.CoreAudioApi.MMDevice = MMDeviceEnumeratorX.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Multimedia)
+        '    If Not MMDeviceX.FriendlyName.Equals(DeviceAudio.FriendlyName) Then
+        '        DeviceAudio = MMDeviceX
+        '        LabelCaption.Text = DeviceAudio.FriendlyName
+        '    End If
+        'End If
+
         Select Case Tipo
             Case enmTipo.Drive, enmTipo.Lan
                 Return Color.FromArgb(255, If(DatiOut.Scrivi AndAlso Not DatiOut.Leggi, Luminosita, 0), If(Not DatiOut.Scrivi AndAlso DatiOut.Leggi, Luminosita, 0), If(DatiOut.Scrivi AndAlso DatiOut.Leggi, Luminosita, 0))
@@ -267,6 +276,12 @@ Public Class urcLed
     Public Sub Reset()
         'ResetRequest = True
         DatiBuffer.Clear()
+
+        If Tipo = enmTipo.Audio Then
+            Dim MMDeviceEnumeratorX As New NAudio.CoreAudioApi.MMDeviceEnumerator
+            DeviceAudio = MMDeviceEnumeratorX.GetDefaultAudioEndpoint(NAudio.CoreAudioApi.DataFlow.Render, NAudio.CoreAudioApi.Role.Multimedia)
+            LabelCaption.Text = DeviceAudio.FriendlyName
+        End If
 
     End Sub
 

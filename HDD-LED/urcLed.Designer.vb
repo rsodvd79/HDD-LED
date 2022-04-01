@@ -40,6 +40,7 @@ Partial Class urcLed
         Me.TableLayoutPanel1.Controls.Add(Me.LabelCaption, 0, 0)
         Me.TableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill
         Me.TableLayoutPanel1.Location = New System.Drawing.Point(0, 0)
+        Me.TableLayoutPanel1.Margin = New System.Windows.Forms.Padding(0)
         Me.TableLayoutPanel1.Name = "TableLayoutPanel1"
         Me.TableLayoutPanel1.RowCount = 3
         Me.TableLayoutPanel1.RowStyles.Add(New System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333!))
@@ -51,27 +52,33 @@ Partial Class urcLed
         'LabelLeggi
         '
         Me.LabelLeggi.AutoSize = True
-        Me.LabelLeggi.Location = New System.Drawing.Point(3, 49)
+        Me.LabelLeggi.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.LabelLeggi.Location = New System.Drawing.Point(0, 50)
+        Me.LabelLeggi.Margin = New System.Windows.Forms.Padding(0)
         Me.LabelLeggi.Name = "LabelLeggi"
-        Me.LabelLeggi.Size = New System.Drawing.Size(22, 13)
+        Me.LabelLeggi.Size = New System.Drawing.Size(150, 50)
         Me.LabelLeggi.TabIndex = 0
         Me.LabelLeggi.Text = "0.0"
         '
         'LabelScrivi
         '
         Me.LabelScrivi.AutoSize = True
-        Me.LabelScrivi.Location = New System.Drawing.Point(3, 98)
+        Me.LabelScrivi.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.LabelScrivi.Location = New System.Drawing.Point(0, 100)
+        Me.LabelScrivi.Margin = New System.Windows.Forms.Padding(0)
         Me.LabelScrivi.Name = "LabelScrivi"
-        Me.LabelScrivi.Size = New System.Drawing.Size(22, 13)
+        Me.LabelScrivi.Size = New System.Drawing.Size(150, 50)
         Me.LabelScrivi.TabIndex = 1
         Me.LabelScrivi.Text = "0.0"
         '
         'LabelCaption
         '
         Me.LabelCaption.AutoSize = True
-        Me.LabelCaption.Location = New System.Drawing.Point(3, 0)
+        Me.LabelCaption.Dock = System.Windows.Forms.DockStyle.Fill
+        Me.LabelCaption.Location = New System.Drawing.Point(0, 0)
+        Me.LabelCaption.Margin = New System.Windows.Forms.Padding(0)
         Me.LabelCaption.Name = "LabelCaption"
-        Me.LabelCaption.Size = New System.Drawing.Size(28, 13)
+        Me.LabelCaption.Size = New System.Drawing.Size(150, 50)
         Me.LabelCaption.TabIndex = 2
         Me.LabelCaption.Text = "LED"
         '

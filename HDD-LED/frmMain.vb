@@ -1,6 +1,6 @@
-﻿Imports LibUsbDotNet
+﻿Imports System.ComponentModel
+Imports LibUsbDotNet
 Imports LibUsbDotNet.Main
-Imports System.ComponentModel
 
 Public Class frmMain
     Dim MyUsbDevice As UsbDevice = Nothing
@@ -60,7 +60,6 @@ Public Class frmMain
             cldX.BorderStyle = BorderStyle.FixedSingle
             cldX.Width = drcW
             cldX.Height = drcH
-            cldX.Inizializza()
             cldX.SetInterval(TrackBarLeggi.Value)
 
             AddHandler cldX.Log, Sub(_sender, _e)
@@ -166,10 +165,8 @@ Public Class frmMain
 
     End Sub
 
-    'Declare Function DestroyIcon Lib "user32" (ByVal hIcon As IntPtr) As Integer
-
-    <System.Runtime.InteropServices.DllImportAttribute("user32.dll")>
-    Private Shared Function DestroyIcon(ByVal handle As IntPtr) As Boolean
+    <System.Runtime.InteropServices.DllImport("user32.dll")>
+    Private Shared Function DestroyIcon(handle As IntPtr) As Boolean
     End Function
 
     Private Sub TimerScriviValori_Tick(sender As Object, e As EventArgs) Handles TimerScriviValori.Tick
@@ -178,16 +175,22 @@ Public Class frmMain
         Dim grpX As Graphics = Graphics.FromImage(myBitmap)
         grpX.Clear(Color.Black)
 
-        For intX As Integer = 0 To lstDrivers.Count - 1
-            lstDrivers(intX).Mostra()
+        Dim IndiceLed As Integer = 0
+        Dim QuantitaLed As Integer = lstDrivers.FindAll(Function(f) f.Visible).Count
 
-            Dim clrX As Color = lstDrivers(intX).ColoreConLuminosita(TrackBarLuminosita.Value)
-            sendUsbDevice(CByte(intX + 1), clrX.R, clrX.G, clrX.B)
+        For Each cldX As urcLed In lstDrivers.FindAll(Function(f) f.Visible)
+            cldX.Mostra()
 
-            grpX.FillRectangle(New SolidBrush(lstDrivers(intX).Colore), CSng(intX * (myBitmap.Width / lstDrivers.Count)), 0, CSng(myBitmap.Width / lstDrivers.Count), myBitmap.Height)
-            grpX.DrawLine(New Pen(Color.White, 1), CSng(intX * (myBitmap.Width / lstDrivers.Count)), 0, CSng(intX * (myBitmap.Width / lstDrivers.Count)), myBitmap.Height)
+            Dim clrX As Color = cldX.ColoreConLuminosita(TrackBarLuminosita.Value)
+            Dim clrY As Color = cldX.Colore
 
-            lstDrivers(intX).Reset()
+            sendUsbDevice(CByte(IndiceLed + 1), clrX.R, clrX.G, clrX.B)
+            grpX.FillRectangle(New SolidBrush(clrY), CSng(IndiceLed * (myBitmap.Width / QuantitaLed)), 0, CSng(myBitmap.Width / QuantitaLed), myBitmap.Height)
+            grpX.DrawLine(New Pen(Color.White, 1), CSng(IndiceLed * (myBitmap.Width / QuantitaLed)), 0, CSng(IndiceLed * (myBitmap.Width / QuantitaLed)), myBitmap.Height)
+
+            cldX.Reset()
+
+            IndiceLed += 1
 
         Next
 
@@ -195,11 +198,11 @@ Public Class frmMain
 
         'Me.Icon = Icon.FromHandle(myBitmap.GetHicon())
 
-        Dim y As Boolean = DestroyIcon(Me.Icon.Handle)
+        Dim BooleanX As Boolean = DestroyIcon(Me.Icon.Handle)
 
-        Dim x As IntPtr = myBitmap.GetHicon()
+        Dim IntPtrX As IntPtr = myBitmap.GetHicon()
 
-        Me.Icon = Icon.FromHandle(x)
+        Me.Icon = Icon.FromHandle(IntPtrX)
 
         'DestroyIcon(x)
 
@@ -225,6 +228,7 @@ Public Class frmMain
 
     Private Sub TrackBarLuminosita_ValueChanged(sender As Object, e As EventArgs) Handles TrackBarLuminosita.ValueChanged
         ToolTipMain.SetToolTip(TrackBarLuminosita, TrackBarLuminosita.Value.ToString)
+
     End Sub
 
     Private Sub Me_Shown(sender As Object, e As EventArgs) Handles Me.Shown

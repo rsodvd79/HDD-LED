@@ -41,6 +41,7 @@ Public Class urcLed
 
     Private DatiBuffer As New classDati
     Private DatiOut As classDati
+    'Private ResetRequest As Boolean = False
 
     Public Enum enmTipo
         none
@@ -64,6 +65,7 @@ Public Class urcLed
         TimerLeggi = New Timer With {
             .Interval = 10
         }
+
     End Sub
 
     Public Sub New()
@@ -80,6 +82,8 @@ Public Class urcLed
         Tipo = enmTipo.Audio
         DeviceAudio = MMDeviceX
         IName = MMDeviceX.ToString
+        Inizializza()
+
     End Sub
 
     Public Sub New(strIName As String, entTipo As enmTipo)
@@ -135,22 +139,31 @@ Public Class urcLed
         PerformanceCounterScritturaSec.InstanceName = IName
         CType(PerformanceCounterScritturaSec, ISupportInitialize).EndInit()
 
+        Inizializza()
+
     End Sub
 
-    Public Sub Inizializza()
+    Private Sub Inizializza()
 
-        If Tipo = enmTipo.Drive Then
-            For Each d As IO.DriveInfo In IO.DriveInfo.GetDrives()
-                If d.Name.StartsWith(IName) Then
-                    LabelCaption.Text = $"{IName} ({d.VolumeLabel})"
-                    Exit Sub
-                End If
-            Next
+        Select Case Tipo
+            Case enmTipo.Drive
+                For Each d As IO.DriveInfo In IO.DriveInfo.GetDrives()
+                    If d.Name.StartsWith(IName) Then
+                        LabelCaption.Text = $"{IName} ({d.VolumeLabel})"
+                        Exit Sub
+                    End If
+                Next
 
-        Else
-            LabelCaption.Text = IName
+            Case enmTipo.CPU
+                LabelCaption.Text = "CPU"
 
-        End If
+            Case enmTipo.Audio
+                LabelCaption.Text = DeviceAudio.FriendlyName
+
+            Case Else
+                LabelCaption.Text = IName
+
+        End Select
 
     End Sub
 
@@ -174,6 +187,10 @@ Public Class urcLed
     End Sub
 
     Public Function ColoreConLuminosita(Luminosita As Integer) As Color
+
+        If DatiOut Is Nothing Then
+            Return Color.Black
+        End If
 
         Select Case Tipo
             Case enmTipo.Drive, enmTipo.Lan
@@ -207,17 +224,8 @@ Public Class urcLed
 
         DatiOut = DatiBuffer.Clone
 
-        SuspendLayout()
-
-        BackColor = Colore()
-        LabelCaption.ForeColor = ColorInverter(BackColor)
-        LabelCaption.BackColor = BackColor
-
-        LabelLeggi.ForeColor = ColorInverter(BackColor)
-        LabelLeggi.BackColor = BackColor
-
-        LabelScrivi.ForeColor = ColorInverter(BackColor)
-        LabelScrivi.BackColor = BackColor
+        Dim bc As Color = Colore()
+        Dim bci As Color = ColorInverter(bc)
 
         Dim strLeggi As String = String.Empty
         Dim strScrivi As String = String.Empty
@@ -233,15 +241,23 @@ Public Class urcLed
 
             Case enmTipo.CPU
                 strLeggi = $"P : {DatiBuffer.Lettura:#0.0} %"
-                LabelCaption.Text = "CPU"
 
             Case enmTipo.Audio
                 strLeggi = $"V : {DatiBuffer.Lettura:#0.0}"
-                LabelCaption.Text = DeviceAudio.FriendlyName
 
         End Select
 
+        SuspendLayout()
+
+        LabelCaption.ForeColor = bci
+        LabelCaption.BackColor = bc
+
+        LabelLeggi.ForeColor = bci
+        LabelLeggi.BackColor = bc
         LabelLeggi.Text = strLeggi
+
+        LabelScrivi.ForeColor = bci
+        LabelScrivi.BackColor = bc
         LabelScrivi.Text = strScrivi
 
         ResumeLayout()
@@ -249,6 +265,7 @@ Public Class urcLed
     End Sub
 
     Public Sub Reset()
+        'ResetRequest = True
         DatiBuffer.Clear()
 
     End Sub
@@ -270,7 +287,12 @@ Public Class urcLed
 
     Private Sub TimerLeggi_Tick(sender As Object, e As EventArgs) Handles TimerLeggi.Tick
         Try
+            'If ResetRequest Then
+            '    ResetRequest = False
+            '    DatiBuffer.Clear()
+            'Else
             Aggiorna()
+            'End If
         Catch ex As Exception
             TimerLeggi.Enabled = False
             Visible = False
